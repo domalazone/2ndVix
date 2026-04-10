@@ -48,7 +48,13 @@ export function resolveUrl(base: string, relative: string): string {
 }
 
 export function getAddonBase(req: any): string {
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+    let host = req.headers['x-forwarded-host'] || req.headers.host || req.get('host');
+    
+    // If x-forwarded-host is a list (from multiple proxies), take the first one
+    if (host && host.includes(',')) {
+        host = host.split(',')[0].trim();
+    }
+    
     return `${protocol}://${host}`;
 }
